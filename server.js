@@ -14,7 +14,11 @@ import orderRoutes from "./routes/order.routes.js";
 
 import orderDetails from "./routes/orderDetail.routes.js";
 
-import merchantRoutes from "./routes/merchant.routes.js"
+import merchantRoutes from "./routes/merchant.routes.js";
+
+import userRoutes from "./routes/user.routes.js";
+
+import cartRoutes from "./routes/cart.routes.js";
 
 //Connection
 import connectToMongoDB from "./database/connectToMongoDB.js";
@@ -26,13 +30,15 @@ app.use(express.json()); // to parse the incoming request with json payloads (Fr
 
 const PORT = process.env.PORT || 8000;
 
-app.use("/api/product",productRoutes); // http:localhost:8000/api/product/
+app.use("/api/product",productRoutes);
 app.use("/api/category",categoryRoutes);
 app.use("/api/subcategory",subcategoryRoutes);
 app.use("/api/order",orderRoutes);
 app.use("/api/orderDetail",orderDetails);
 app.use("/api/orderDetail",orderDetails);
 app.use("/api/merchant/",merchantRoutes);
+app.use("/api/user/",userRoutes);
+app.use("/api/cart/",cartRoutes);
 
 
 

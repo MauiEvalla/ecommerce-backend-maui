@@ -6,9 +6,9 @@ const router = express.Router();
 
 router.post("/addOrder",addOrder)
 
-router.get("/order", getAllOrders);
+router.get("/", getAllOrders);
 
-router.get("/order/:id",getOrderById)
+router.get("/:id",getOrderById)
 
 router.put("/update/:id",updateOrder)
 

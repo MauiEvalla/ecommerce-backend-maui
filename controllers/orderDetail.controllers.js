@@ -1,16 +1,29 @@
 import OrderDetail from '../models/orderDetail.model.js';
 
 // Create a new OrderDetail
+// Create a new OrderDetail
 export const addOrderDetail = async (req, res) => {
   try {
-    const { order_id, product_id, quantity, price } = req.body; // Change variable names to match schema
+    const { order_id, product_id, quantity, price } = req.body;
 
-    const newOrderDetail = new OrderDetail({ order_id, product_id, quantity, price }); // Use order_id and product_id
+    const newOrderDetail = new OrderDetail({
+      order_id,
+      product_id,
+      quantity,
+      price,
+    });
+
     const savedOrderDetail = await newOrderDetail.save();
 
-    res.status(201).json({ message: "Order detail added successfully", orderDetail: savedOrderDetail });
+    res.status(201).json({
+      message: "Order detail added successfully",
+      orderDetail: savedOrderDetail,
+    });
   } catch (error) {
-    res.status(400).json({ message: "Error adding order detail", error });
+    res.status(400).json({
+      message: "Error adding order detail",
+      error,
+    });
   }
 };
 
