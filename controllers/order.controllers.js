@@ -1,15 +1,17 @@
 import Order from '../models/order.model.js'; // Import your Order model
 import User from '../models/user.model.js';
 import OrderDetail from '../models/orderDetail.model.js';
+import Cart from '../models/cart.model.js';
 
 
 export const addOrder = async (req, res) => {
-  const { user_id, shippingAddress, orderAddress, orderEmail, order_status, orderDetails } = req.body;
+  const { shippingAddress, orderAddress, orderEmail, order_status, orderDetails } = req.body;
+  const user_id = req.user._id; // Get the authenticated user ID
 
   try {
     // Create a new order
     const newOrder = new Order({
-      user_id,
+      user_id, // Use authenticated user's ID
       shippingAddress,
       orderAddress,
       orderEmail,
@@ -50,12 +52,14 @@ export const addOrder = async (req, res) => {
 
 // Get all orders
 export const getAllOrders = async (req, res) => {
+  const user_id = req.user._id; // Get authenticated user's ID
+
   try {
-    const orders = await Order.find()
-      .populate('user_id', 'email')  // Populate user info
+    const orders = await Order.find({ user_id }) // Get orders only for the authenticated user
+      .populate('user_id', 'email') // Populate user info
       .populate({
-        path: 'orderDetails',  // Populate order details
-        populate: { path: 'product_id' },  // Nested populate for product info
+        path: 'orderDetails', // Populate order details
+        populate: { path: 'product_id' }, // Nested populate for product info
       });
 
     res.status(200).json(orders);
@@ -70,11 +74,13 @@ export const getAllOrders = async (req, res) => {
 // Get a single order by ID
 export const getOrderById = async (req, res) => {
   const { id } = req.params;
+  const user_id = req.user._id; // Get authenticated user's ID
 
   try {
-    const order = await Order.findById(id).populate('user_id', 'email');
+    const order = await Order.findOne({ _id: id, user_id }).populate('user_id', 'email'); // Find order only if it belongs to the user
+
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({ message: "Order not found or you don't have permission to access this order" });
     }
 
     res.status(200).json(order);
@@ -84,21 +90,23 @@ export const getOrderById = async (req, res) => {
   }
 };
 
+
 // Update an order
 export const updateOrder = async (req, res) => {
   const { id } = req.params;
   const { shippingAddress, orderAddress, orderEmail, order_status, orderDetails } = req.body;
+  const user_id = req.user._id; // Get authenticated user's ID
 
   try {
-    // Update order info
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
+    // Update order info if it belongs to the authenticated user
+    const updatedOrder = await Order.findOneAndUpdate(
+      { _id: id, user_id }, // Find order only if it belongs to the user
       { shippingAddress, orderAddress, orderEmail, order_status },
       { new: true }
     );
 
     if (!updatedOrder) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({ message: "Order not found or you don't have permission to update this order" });
     }
 
     // Update order details
@@ -130,14 +138,17 @@ export const updateOrder = async (req, res) => {
 };
 
 
+
 export const deleteOrder = async (req, res) => {
   const { id } = req.params;
+  const user_id = req.user._id; // Get authenticated user's ID
 
   try {
-    const deletedOrder = await Order.findByIdAndDelete(id);
+    // Delete order only if it belongs to the authenticated user
+    const deletedOrder = await Order.findOneAndDelete({ _id: id, user_id });
 
     if (!deletedOrder) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({ message: "Order not found or you don't have permission to delete this order" });
     }
 
     // Delete associated order details
@@ -153,4 +164,62 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
+// Update Order Status
+export const updateOrderStatus = async (req, res) => {
+  const { id } = req.params; // Order ID
+  const { order_status } = req.body;
+
+  try {
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.order_status = order_status;
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+      message: "Order status updated",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ message: "Failed to update order status" });
+  }
+};
+
+export const createOrderFromCart = async (req, res) => {
+  const userId = req.user._id; // Get the authenticated user's ID from the token
+  const { shippingAddress } = req.body;
+
+  try {
+    // Fetch user's cart
+    const cart = await Cart.findOne({ user_id: userId }).populate('items.productId');
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: 'Your cart is empty' });
+    }
+
+    // Create new order from cart
+    const newOrder = new Order({
+      user_id: userId,
+      items: cart.items, // Copy items from cart to order
+      totalAmount: cart.items.reduce((acc, item) => acc + item.productId.price * item.quantity, 0), // Assuming you have price in product schema
+      shippingAddress,
+      orderDate: Date.now(),
+      order_status: 'Pending', // Default status
+    });
+
+    // Save the order
+    const savedOrder = await newOrder.save();
+
+    // Clear the user's cart after order is placed
+    await Cart.findOneAndDelete({ user_id: userId });
+
+    res.status(201).json(savedOrder);
+  } catch (error) {
+    console.error('Error creating order from cart:', error);
+    res.status(500).json({ message: 'Failed to create order from cart' });
+  }
+};
 

@@ -1,10 +1,20 @@
+// Create a new OrderDetail
 import OrderDetail from '../models/orderDetail.model.js';
+import Order from '../models/order.model.js';
+import User from '../models/user.model.js';
 
-// Create a new OrderDetail
-// Create a new OrderDetail
+
 export const addOrderDetail = async (req, res) => {
   try {
     const { order_id, product_id, quantity, price } = req.body;
+    const user_id = req.user._id; // Get authenticated user's ID
+
+    // Verify the order belongs to the user
+    const order = await Order.findOne({ _id: order_id, user_id });
+
+    if (!order) {
+      return res.status(403).json({ message: "You are not authorized to add details to this order" });
+    }
 
     const newOrderDetail = new OrderDetail({
       order_id,
@@ -26,6 +36,7 @@ export const addOrderDetail = async (req, res) => {
     });
   }
 };
+
 
 
 // Get all OrderDetails
