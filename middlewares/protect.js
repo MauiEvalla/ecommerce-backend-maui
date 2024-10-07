@@ -58,19 +58,32 @@ const merchantProtect = async (req, res, next) => {
   }
 };
 
-const protectByRole = (role) => {
-  return (req, res, next) => {
+//CHANGED THE ORIGINAL
+const protectByRole = (allowedRoles) => {
+  return async (req, res, next) => {
     try {
-      const userRole = req.body.role;
+      const token = req.header("Authorization")?.replace("Bearer ", "");
+      if (!token) {
+        throw new Error("Authorization token is missing");
+      }
 
-      if (!role.includes(userRole)) {
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Find user in the database based on the decoded token's userId
+      const user = await User.findById(decodedToken.userId);
+      if (!user || !allowedRoles.includes(user.role)) {
         throw new Error("You are not authorized to perform this action");
       }
+
+      // Attach user to the request object for further access
+      req.user = { _id: user._id, role: user.role, ...user._doc };
+
       next();
     } catch (error) {
       res.status(401).send({ message: error.message });
     }
   };
 };
+
 
 export { protect, protectByRole, adminProtect, merchantProtect };

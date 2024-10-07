@@ -243,56 +243,34 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+//CHANGED THE ORIGINAL
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validate user credentials
     const user = await User.findOne({ email });
-
-    if (!user) {
-      throw new Error("Email doesn't match in our records");
-    }
-
+    
     const isMatch = await compare(password, user.password);
     if (!isMatch) {
       throw new Error("Password is not correct");
     }
 
-    if (!user.isFirstTimeLogin) {
-      const token = jwt.sign(
-        {
-          userId: user._id,
-          email: user.email,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "30d" }
-      );
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
-      res.status(200).send({
-        token,
-        userId: user._id,
-        isFirstTimeLogin: user.isFirstTimeLogin,
-      });
-    } else {
-      const token = jwt.sign(
-        {
-          userId: user._id,
-          email: user.email,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "30d" }
-      );
-
-      sendVerificationCode(user.mobileNo, user.secretCode);
-      res.status(200).send({
-        token,
-        userId: user._id,
-        isFirstTimeLogin: user.isFirstTimeLogin,
-      });
-    }
+    res.status(200).send({
+      message: "Login successful",
+      token,  // Send the token to the client
+      user: { _id: user._id, email: user.email, role: user.role },
+    });
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    res.status(500).send({ message: error.message +"WOWOWOOW"});
   }
 };
+
 
 const loginUserMobileNo = async (req, res) => {
   try {

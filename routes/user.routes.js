@@ -6,7 +6,7 @@ import { userRole } from "../constants/globalConst.js";
 const router = Router();
 
 router.post("/register", user.createUser);
-router.post("/login", protectByRole(userRole), user.loginUser);
+router.post("/login", user.loginUser);
 router.post("/login/mobileNo", protectByRole(userRole), user.loginUserMobileNo);
 // router.post("/first-login", protectByRole(userRole), user.firstLogin);
 // router.put("/:id", protect, user.updateUser);

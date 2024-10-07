@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
+import morgan from "morgan";
 
 
 //Product Routes
@@ -25,6 +27,8 @@ import connectToMongoDB from "./database/connectToMongoDB.js";
 
 const app = express();
 dotenv.config();
+
+app.use(cors());
 
 app.use(express.json()); // to parse the incoming request with json payloads (From req.body)
 

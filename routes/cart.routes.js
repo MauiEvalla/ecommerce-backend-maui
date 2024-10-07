@@ -7,7 +7,7 @@ import { protect } from "../middlewares/protect.js";
 const router = express.Router();
 
 router.post("/addItemToCart", protect, addItemToCart);
-router.get("/cart", protect, getCartByUserId);
+router.get("/", protect, getCartByUserId);
 router.post("/removeItemFromCart", protect, removeItemFromCart);
 router.post("/clearCart", protect, clearCart);
 
