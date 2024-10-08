@@ -1,5 +1,5 @@
 import express from "express";
-import {addOrder,getAllOrders,getOrderById,updateOrder,deleteOrder} from "../controllers/order.controllers.js";
+import {addOrder,getAllOrders,getOrderById,updateOrder,deleteOrder,createOrderFromCart} from "../controllers/order.controllers.js";
 import { protect } from '../middlewares/protect.js';
 
 
@@ -7,6 +7,8 @@ const router = express.Router();
 
 
 router.post("/addOrder",protect,addOrder)
+
+router.post("/OrderFromCart",protect,createOrderFromCart)
 
 router.get("/",protect, getAllOrders);
 

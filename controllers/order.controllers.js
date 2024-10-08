@@ -20,7 +20,6 @@ export const addOrder = async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // Add order details if provided
     if (orderDetails && orderDetails.length > 0) {
       const orderDetailPromises = orderDetails.map(async (detail) => {
         const newOrderDetail = new OrderDetail({
