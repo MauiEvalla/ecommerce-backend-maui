@@ -4,6 +4,7 @@ import OrderDetail from '../models/orderDetail.model.js';
 import Cart from '../models/cart.model.js';
 
 
+
 export const addOrder = async (req, res) => {
   const { shippingAddress, orderAddress, orderEmail, order_status, orderDetails } = req.body;
   const user_id = req.user._id; // Get the authenticated user ID
@@ -189,7 +190,7 @@ export const updateOrderStatus = async (req, res) => {
 
 export const createOrderFromCart = async (req, res) => {
   const userId = req.user._id; // Get the authenticated user's ID from the token
-  const { shippingAddress } = req.body;
+  const { shippingAddress, orderAddress, orderEmail } = req.body; // Accept these fields from the request body
 
   try {
     // Fetch user's cart
@@ -199,20 +200,40 @@ export const createOrderFromCart = async (req, res) => {
       return res.status(400).json({ message: 'Your cart is empty' });
     }
 
-    // Create new order from cart
+    // Calculate the total amount
+    const totalAmount = cart.items.reduce((acc, item) => acc + item.productId.price * item.quantity, 0);
+
+    // Create a new order without orderDetails first
     const newOrder = new Order({
       user_id: userId,
-      items: cart.items, // Copy items from cart to order
-      totalAmount: cart.items.reduce((acc, item) => acc + item.productId.price * item.quantity, 0), // Assuming you have price in product schema
+      totalAmount,
       shippingAddress,
-      orderDate: Date.now(),
-      order_status: 'Pending', // Default status
+      orderAddress,
+      orderEmail,
+      order_status: 'pending', // Ensure lowercase to match the schema
     });
 
-    // Save the order
     const savedOrder = await newOrder.save();
 
-    // Clear the user's cart after order is placed
+    // Map cart items to match the structure of order details and include order_id
+    const orderDetails = await Promise.all(
+      cart.items.map(async (item) => {
+        const orderDetail = new OrderDetail({
+          order_id: savedOrder._id, // Use the newly created order's ID
+          product_id: item.productId._id,
+          quantity: item.quantity,
+          price: item.productId.price,
+        });
+        await orderDetail.save();
+        return orderDetail._id; // Store the ID of the saved OrderDetail
+      })
+    );
+
+    // Update the saved order with the order details
+    savedOrder.orderDetails = orderDetails;
+    await savedOrder.save();
+
+    // Clear the user's cart after the order is placed
     await Cart.findOneAndDelete({ user_id: userId });
 
     res.status(201).json(savedOrder);
@@ -221,4 +242,3 @@ export const createOrderFromCart = async (req, res) => {
     res.status(500).json({ message: 'Failed to create order from cart' });
   }
 };
-

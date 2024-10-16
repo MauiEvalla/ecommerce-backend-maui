@@ -6,7 +6,7 @@ const router = express.Router();
 
 //Category
 router.post("/addCategory",addCategory)
-router.get("/getAllCategories",getAllCategories)
+router.get("/",getAllCategories)
 router.get("/getCategoryById/:id",getCategoryById)
 
 router.put("/updateCategory/:id",updateCategory)

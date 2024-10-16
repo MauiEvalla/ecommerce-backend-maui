@@ -3,7 +3,7 @@ import {getAllBorrowerRequests, getAllMerchant, loginMerchant,getAllMerchantID }
 
 const router = express.Router();
 
-router.get("/merchants", getAllMerchant);      // Get all merchants
+router.get("/", getAllMerchant);      // Get all merchants
 router.get("/merchants/:id", getAllMerchantID);  // Get merchant by ID
 
 export default router;

@@ -25,13 +25,18 @@ const addCategory = async (req, res) => {
 
 // GET ALL CATEGORIES
 const getAllCategories = async (req, res) => {
-    try {
-      const categories = await Category.find();
-      res.status(200).json({ allCategories: categories });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
+  console.log('getAllCategories called'); // log when the function is called
+  try {
+    console.log('Fetching categories from database...'); // log before database query
+    const categories = await Category.find(); // Fetch all categories without limiting or selecting fields
+    console.log('Categories fetched:', categories); // log after database query
+    res.status(200).json({ allCategories: categories });
+  } catch (error) {
+    console.error('Error fetching categories:', error); // log error message
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
   // UPDATE CATEGORY
 const updateCategory = async (req, res) => {
