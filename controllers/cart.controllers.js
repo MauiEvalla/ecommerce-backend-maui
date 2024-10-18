@@ -43,6 +43,7 @@ export const getCartByUserId = async (req, res) => {
 
   try {
     const cart = await Cart.findOne({ user_id: userId }).populate('items.productId');
+    console.log('Fetched Cart:', cart);
     if (!cart) {
       return res.status(404).json({ message: 'Cart not found' });
     }
@@ -52,6 +53,7 @@ export const getCartByUserId = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch cart' });
   }
 };
+
 
 // Remove item from cart
 export const removeItemFromCart = async (req, res) => {
