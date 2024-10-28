@@ -26,7 +26,7 @@ export const getReviewsForProduct = async (req, res) => {
   const { product_id } = req.params;
 
   try {
-    const reviews = await Review.find({ product_id }).populate('user_id', 'name'); // Populating user's name for display
+    const reviews = await Review.find({ product_id }).populate('user_id', 'email'); // Fetch user's email
     res.status(200).json(reviews);
   } catch (error) {
     console.error('Error fetching reviews:', error);

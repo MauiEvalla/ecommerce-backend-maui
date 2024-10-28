@@ -17,6 +17,7 @@ import orderDetails from "./routes/orderDetail.routes.js";
 import merchantRoutes from "./routes/merchant.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
+import reviewRoutes from "./routes/review.routes.js";
 
 const app = express();
 dotenv.config();
@@ -67,3 +68,4 @@ app.use("/api/orderDetail", orderDetails);
 app.use("/api/merchant/", merchantRoutes);
 app.use("/api/user/", userRoutes);
 app.use("/api/cart/", cartRoutes);
+app.use("/api/reviews/",reviewRoutes)
