@@ -29,5 +29,7 @@ router.post("/validate/registration", user.validateRegistration);
 router.post("/send-otp", protect, user.sendOTP);
 router.post("/passcode", protect, user.loginPassCode);
 router.post("/validate-login", user.validateCodeLogin);
+router.post("/transactions/:merchantId", protect, user.addTransaction);
+
 
 export default router;

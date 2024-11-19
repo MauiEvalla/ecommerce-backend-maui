@@ -45,36 +45,87 @@ const userSchema = new mongoose.Schema(
     qrCode: { type: String },
     secretCode: { type: String, required: true },
     isFirstTimeLogin: { type: Boolean, default: true },
-
+    limit: { type: String, required: true, default: "10000" },
+    balance: { type: Number, default: 0 },
+    pointsBalance: { type: Number, default: 0 },
+    creditsBalance: { type: Number, default: 0 },
     creditRequests: [
       {
+        creditRequestNumber: { type: String },
         merchantId: { type: String, required: true },
         merchantName: { type: String, required: true },
+        merchantLogo: { type: String, required: true },
         isApproved: { type: Boolean, required: true, default: false },
         incomeSource: { type: String },
         incomeSourceAmount: { type: String },
         creditAmount: { type: Number, required: true, default: 0 },
         applicationDate: { type: Date, required: true, default: null },
+        monthlyInstallment: { type: String },
         term: { type: String },
         status: { type: String, required: true, default: "new" },
         dateApproved: { type: Date },
+        paymentLog: [
+          {
+            paymentDate: { type: Date },
+            paymentAmount: { type: Number },
+            status: { type: String },
+          },
+        ],
       },
     ],
-
-    credits: [
+    cart: [
       {
-        merchantId: { type: String, required: true },
-        merchantName: { type: String, required: true },
-        isApproved: { type: Boolean, required: true, default: false },
-        incomeSource: { type: String },
-        incomeSourceAmount: { type: String },
-        creditAmount: { type: Number, required: true, default: 0 },
-        applicationDate: { type: Date, required: true, default: null },
-        term: { type: String },
-        status: { type: String, required: true },
-        dateApproved: { type: Date },
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+        },
+        merchantId: {
+          type: mongoose.Schema.Types.ObjectId,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+        weight: {
+          type: Number,
+          required: true,
+        },
+        description: {
+          type: String,
+        },
+        image: {
+          type: String,
+          required: true,
+        },
+        categoryId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Category",
+          required: true,
+        },
+        inStock: {
+          type: Boolean,
+          default: true,
+        },
+        location: {
+          type: String,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          default: 0,
+        },
+        addedDate: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
+    transactionHistory: [],
+    orders: [],
   },
   {
     timestamps: true,

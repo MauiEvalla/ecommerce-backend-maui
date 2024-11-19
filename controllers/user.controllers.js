@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Transaction from "../models/transaction.model.js";
 import Merchant from "../models/merchant.model.js";
 import { hash, compare } from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -234,10 +235,10 @@ const getAllUser = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const { userId } = req.user;
-    const user = await User.findById(userId);
+    const userId = req.user._id;
+    const user = await User.findOne({ user_id: userId }); 
 
-    res.status(200).send({ userProfile: user });
+    res.status(200).send({ userProfile: user.email });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
@@ -719,6 +720,53 @@ const sendOTP = async (req, res) => {
   }
 };
 
+const addTransaction = async (req, res) => {
+  try {
+
+    const userId = req.user._id;
+    let { merchantId } = req.params; // Get merchantId from URL
+    const { transactionType, amount, description } = req.body;
+
+    // Trim any unwanted whitespace or newline characters from merchantId
+    merchantId = merchantId.trim();
+
+    const user = await User.findById(userId);
+    const merchant = await Merchant.findById(merchantId);
+
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    if (!merchant) {
+      throw new Error("Merchant not found!");
+    }
+
+    const transaction = new Transaction({
+      userName: `${user.firstName} ${user.lastName}`,
+      userId,
+      userEmail: user.email,
+      transactionType,
+      userMobileNo: user.mobileNo,
+      merchantId,
+      amount,
+      merchantLogo: merchant.profilePicture,
+      description,
+      dateTime: new Date(),
+    });
+
+    await transaction.save();
+
+    // Add transaction to user's history
+    user.transactionHistory.push(transaction);
+    await user.save();
+
+    res.status(200).send({ message: "Transaction added successfully" });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+
 export {
   createUser,
   validateRegistration,
@@ -742,4 +790,5 @@ export {
   sendOTP,
   loginPassCode,
   validateCodeLogin,
+  addTransaction,
 };
